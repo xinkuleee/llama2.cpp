@@ -52,7 +52,9 @@ extern "C" {
 #define MS_INVALIDATE   4
 
 /* Flags for portable clock_gettime call. */
+#ifdef _MSC_VER
 #define CLOCK_REALTIME  0
+#endif
 
 void*   mmap(void *addr, size_t len, int prot, int flags, int fildes, ssize_t off);
 int     munmap(void *addr, size_t len);
@@ -60,7 +62,9 @@ int     mprotect(void *addr, size_t len, int prot);
 int     msync(void *addr, size_t len, int flags);
 int     mlock(const void *addr, size_t len);
 int     munlock(const void *addr, size_t len);
+#ifdef _MSC_VER
 int     clock_gettime(int clk_id, struct timespec *tp);
+#endif
 
 #ifdef __cplusplus
 };
