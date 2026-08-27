@@ -1,6 +1,8 @@
 # choose your compiler, e.g. gcc/clang
 # example override to clang: make run CC=clang
 CC = gcc
+CXX = c++
+CXXFLAGS = -std=c++20 -Wall -Wextra -Wpedantic
 
 # the most basic way of building that is most likely to work on most systems
 .PHONY: run
@@ -8,11 +10,20 @@ run: run.c
 	$(CC) -O3 -o run run.c -lm
 	$(CC) -O3 -o runq runq.c -lm
 
+# C++20 rewrite of the float32 inference program.
+.PHONY: runcpp
+runcpp: run.cpp
+	$(CXX) $(CXXFLAGS) -O3 -o run_cpp run.cpp
+
 # useful for a debug build, can then e.g. analyze with valgrind, example:
 # $ valgrind --leak-check=full ./run out/model.bin -n 3
 rundebug: run.c
 	$(CC) -g -o run run.c -lm
 	$(CC) -g -o runq runq.c -lm
+
+.PHONY: runcppdebug
+runcppdebug: run.cpp
+	$(CXX) $(CXXFLAGS) -O0 -g -o run_cpp run.cpp
 
 # https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
 # https://simonbyrne.github.io/notes/fastmath/
@@ -27,6 +38,10 @@ rundebug: run.c
 runfast: run.c
 	$(CC) -Ofast -o run run.c -lm
 	$(CC) -Ofast -o runq runq.c -lm
+
+.PHONY: runcppfast
+runcppfast: run.cpp
+	$(CXX) $(CXXFLAGS) -O3 -ffast-math -o run_cpp run.cpp
 
 # additionally compiles with OpenMP, allowing multithreaded runs
 # make sure to also enable multiple threads when running, e.g.:
@@ -74,3 +89,6 @@ testcc:
 clean:
 	rm -f run
 	rm -f runq
+	rm -f run_cpp
+	rm -f testc
+	rm -rf run_cpp.dSYM
