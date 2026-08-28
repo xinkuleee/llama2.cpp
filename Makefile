@@ -15,6 +15,10 @@ run: run.c
 runcpp: run.cpp
 	$(CXX) $(CXXFLAGS) -O3 -o run_cpp run.cpp
 
+.PHONY: runqcpp
+runqcpp: runq.cpp
+	$(CXX) $(CXXFLAGS) -O3 -o runq_cpp runq.cpp
+
 # useful for a debug build, can then e.g. analyze with valgrind, example:
 # $ valgrind --leak-check=full ./run out/model.bin -n 3
 rundebug: run.c
@@ -90,5 +94,7 @@ clean:
 	rm -f run
 	rm -f runq
 	rm -f run_cpp
+	rm -f runq_cpp
 	rm -f testc
 	rm -rf run_cpp.dSYM
+	rm -rf runq_cpp.dSYM

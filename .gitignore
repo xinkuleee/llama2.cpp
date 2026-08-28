@@ -1,5 +1,7 @@
 /run_cpp
 /run_cpp.dSYM/
+/runq_cpp
+/runq_cpp.dSYM/
 /testc
 /stories15M.bin
 /*-debug.log
