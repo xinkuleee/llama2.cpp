@@ -1,10 +1,10 @@
-# stories260K
+# stories260K model
 
-[Stories260K huggginface link](https://huggingface.co/karpathy/tinyllamas)
+[Stories260K Hugging Face page](https://huggingface.co/karpathy/tinyllamas/tree/main/stories260K)
 
 The 260K model is a tiny model used for testing, and was trained as follows:
 
-```
+```bash
 python train.py \
     --out_dir="outmini" \
     --batch_size=128 \
@@ -28,11 +28,11 @@ python train.py \
     --compile=True
 ```
 
-You'll notice that `n_kv_heads` is 4 while `n_heads` is 8, so two heads at a time share their key,value projections, i.e. this model is 2X multiquery. You'll also notice that we're using a custom tokenizer with 512 tokens. The model trained for ~10 minutes (?) on my A100 and achieves validation loss of 1.2968.
+`n_kv_heads` is 4 while `n_heads` is 8, so every two Query heads share one KV head. This is grouped-query attention (GQA) with two Query heads per KV head. The model uses a custom tokenizer with 512 tokens. It trained for roughly ten minutes on an A100 and reached validation loss 1.2968.
 
 Sampling this model at temperature 0.0 (i.e. deterministic greedy argmax sampling) gives:
 
-```
+```bash
 $ ./run stories260K/stories260K.bin -z stories260K/tok512.bin -t 0.0
 Once upon a time, there was a little girl named Lily. She loved to play outside in the park. One day, she saw a big, red ball. She wanted to play with it, but it was too high.
 Lily's mom said, "Lily, let's go to the park." Lily was sad and didn't know what to do. She said, "I want to play with your ball, but I can't find it."
@@ -40,15 +40,24 @@ Lily was sad and didn't know what to do. She said, "I'm sorry, Lily. I didn't kn
 Lily didn't want to help her mom, so she said, "I'm sorry, mom. I didn't know what to do." Her mom said, "Don't worry, Lily. We can help you.
 ```
 
+The C++ FP32 runtime accepts the same v0 checkpoint:
+
+```bash
+make runcpp
+./run_cpp stories260K/stories260K.bin \
+  -z stories260K/tok512.bin \
+  -t 0.0
+```
+
 You can reproduce the same in Python by running `sample.py`:
 
-```
+```bash
 $ python sample.py --checkpoint=stories260K/stories260K.pt --tokenizer=stories260K/tok512.model --temperature=0.0 --max_new_tokens=257
 ```
 
 I hardcoded max tokens to be 257 manually because the `sample.py` script doesn't currently terminate on the special BOS token like the run.c script does. Sampling at 1.0 with topp of 0.9 gives a bit more reasonable samples:
 
-```
+```bash
 $ ./run stories260K/stories260K.bin -z stories260K/tok512.bin -t 1.0 -p 0.9 -s 133742
 Once upon a time, there was a little boy named Timmy. Timmy loved to play with his toys and eat sandwiches. One day, Timmy's mom told him it was time to rest for a while. Timmy's friend Billy came over and took him a down.
 Timmy's mom saw that Timmy was sad, but Timmy said, "I didn't understand what is it! We need to find some leafs." Timmy thought about it and took a deep breath on a spoon. He hoped it was important to be kind and continued to find its image next time.

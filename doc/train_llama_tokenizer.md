@@ -1,4 +1,4 @@
-# training llama tokenizer
+# Training a Llama tokenizer
 
 How does Meta train their sentencepiece tokenizer? You can print the config as follows:
 
@@ -12,7 +12,7 @@ print(mp.normalizer_spec)
 
 this gives:
 
-```
+```text
 trainer_spec {
   input: "/large_experiments/theorem/datasets/MERGED/all.test1.merged"
   model_prefix: "spm_model_32k_200M_charcov099995_allowWSO__v2"
@@ -67,7 +67,7 @@ We can use the sentencepiece spm_train to train the same models, but optionally 
 
 We'll depart on one setting, I recommend changing `character_coverage` -> 1.0. We also want to make sure to note the following important settings that come up in the paper and are not necessarily the default sentencepiece settings:
 
-```
+```text
 --split-digits = true
 --allow_whitespace_only_pieces = true
 --byte_fallback = true
@@ -76,7 +76,7 @@ We'll depart on one setting, I recommend changing `character_coverage` -> 1.0. W
 
 With this in mind we can train a sentencepiece vocab in what I believe is probably the same to how Meta trained theirs as:
 
-```
+```bash
 spm_train --input="$input" \
           --model_prefix="$model_prefix" \
           --model_type=bpe \
@@ -92,8 +92,8 @@ spm_train --input="$input" \
           --normalization_rule_name=identity \
 ```
 
-Where $input is the input file, $model_prefix is the output path prefix, vocab_size is the desired vocab, and we're by default taking over the CPU resources of the machine.
+Here, `input` is the input file, `model_prefix` is the output path prefix, and `vocab_size` is the requested vocabulary size. By default, the command uses the machine's available CPU resources.
 
-Lastly note that sentencepiece is weird and expects "sentences" delimited by newlines as the input. You can't just put in a massive block of text. And they have a hyperparameter that constols the maximum size of a "sentence". Fwiw I really dislike this design choice around a weird concept of a "sentence". It should just be block of text with no assumptions. But here we are.
+SentencePiece expects input records delimited by newlines and has a parameter controlling the maximum record length. A single unbounded block of text is therefore not an appropriate input file.
 
 Look into the file `tinystories.py` where we train the vocab in the same way, but using Python bindings instead.
